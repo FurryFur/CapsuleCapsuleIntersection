@@ -92,6 +92,13 @@ int main()
 
 		nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
 
+		nvgBeginPath(vg);
+		nvgArc(vg, 100, 100, 30, 3.14 / 2, -3.14 / 2, NVG_CCW);
+		nvgFillColor(vg, nvgRGBA(255, 192, 0, 128));
+		nvgStrokeColor(vg, nvgRGBA(255, 192, 0, 255));
+		nvgFill(vg);
+		nvgStroke(vg);
+
 		nvgEndFrame(vg);
 
 		glfwSwapBuffers(window);
