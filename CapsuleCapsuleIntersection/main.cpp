@@ -17,29 +17,43 @@
 //
 
 
-#include <glad\glad.h>
-#include <GLFW/glfw3.h>
+#include "Capsule.h"
+#include "CapsuleFactory.h"
+#include "Line.h"
 
+#include <glm\glm.hpp>
+#include <glad\glad.h>
+#include <GLFW\glfw3.h>
 #include <nanovg.h>
 #define NANOVG_GL3_IMPLEMENTATION
 #include <nanovg_gl.h>
 
+
+using namespace glm;
 
 void errorcb(int error, const char* desc)
 {
 	printf("GLFW error %d: %s\n", error, desc);
 }
 
-static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
+void key(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
+}
+
+void mouseBtnCallback(GLFWwindow* window, int button, int action, int mods) 
+{
+	double mousex, mousey;
+	glfwGetCursorPos(window, &mousex, &mousey);
+	CapsuleFactory::instance().onClick(button, action, mousex, mousey);
 }
 
 int main()
 {
 	GLFWwindow* window;
 	NVGcontext* vg = NULL;
+
 
 	if (!glfwInit()) {
 		printf("Failed to init GLFW.");
@@ -62,6 +76,7 @@ int main()
 		return -1;
 	}
 
+	glfwSetMouseButtonCallback(window, mouseBtnCallback);
 	glfwSetKeyCallback(window, key);
 
 	glfwMakeContextCurrent(window);
@@ -92,12 +107,15 @@ int main()
 
 		nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
 
-		nvgBeginPath(vg);
-		nvgArc(vg, 100, 100, 30, 3.14 / 2, -3.14 / 2, NVG_CCW);
-		nvgFillColor(vg, nvgRGBA(255, 192, 0, 128));
-		nvgStrokeColor(vg, nvgRGBA(255, 192, 0, 255));
-		nvgFill(vg);
-		nvgStroke(vg);
+		const std::vector<Capsule>& capsuleList = CapsuleFactory::instance().getCapsuleList();
+		for (const Capsule& capsule : capsuleList) {
+			capsule.draw(vg);
+		}
+
+		if (capsuleList.size() == 2) {
+			Line shortestLine = capsuleList[0].getShortestLineTo(capsuleList[1]);
+			shortestLine.draw(vg);
+		}
 
 		nvgEndFrame(vg);
 
